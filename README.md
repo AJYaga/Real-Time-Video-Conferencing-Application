@@ -155,6 +155,6 @@ Limitations
 - Mesh calls increase CPU/bandwidth as users increase.
 
 Group Members
-Kishothana P. — Frontend / UI
-Shapthana J.  — WebRTC logic & Testing
-Ajanthan T.   — Backend + private rooms
+- Kishothana P. — Frontend / UI
+- Shapthana J.  — WebRTC logic & Testing
+- Ajanthan T.   — Backend + private rooms
