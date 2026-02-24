@@ -1,0 +1,21 @@
+# Node
+webrtc-signal-server/node_modules/
+webrtc-meet/node_modules/
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.vite/
+**/.vite/
+**/.env
+**/.env.*
+
+# Logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
