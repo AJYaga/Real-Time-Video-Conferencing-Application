@@ -131,10 +131,6 @@ export default function App() {
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
 
-    // allow receiving even if my own mic/cam is off
-    pc.addTransceiver("video", { direction: "sendrecv" });
-    pc.addTransceiver("audio", { direction: "sendrecv" });
-
     // add local tracks if already available
     attachLocalTracksToPC(pc);
 
@@ -145,8 +141,11 @@ export default function App() {
     };
 
     pc.ontrack = (event) => {
-      const [stream] = event.streams;
-      setRemoteStreams((prev) => ({ ...prev, [remoteId]: stream }));
+      setRemoteStreams((prev) => {
+        const existing = prev[remoteId] || new MediaStream();
+        existing.addTrack(event.track);
+        return { ...prev, [remoteId]: existing };
+      });
     };
 
     pc.onicecandidate = (event) => {
@@ -424,7 +423,7 @@ export default function App() {
   // --------------------------
   // Actions
   // --------------------------
-  function handleJoin(e) {
+  async function handleJoin(e) {
     e.preventDefault();
     if (!name.trim()) return alert("Enter your name");
     if (!roomId.trim()) return alert("Enter a room ID");
@@ -435,6 +434,9 @@ export default function App() {
     setMediaState({});
     setPinnedId(null);
     setIsJoining(true);
+
+    // ✅ KEY FIX: start local media BEFORE joining
+    await startLocalMediaOnce(); // tracks will be created but disabled by default
 
     setPage("call");
     window.history.replaceState({}, "", window.location.pathname);
