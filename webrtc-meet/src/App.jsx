@@ -47,7 +47,7 @@ export default function App() {
 
   const [remoteStreams, setRemoteStreams] = useState({}); // { socketId: MediaStream }
 
-  const [remoteMuted, setRemoteMuted] = useState(true);
+  const [remoteMuted, setRemoteMuted] = useState(false);
   const [toast, setToast] = useState("");
 
   // { socketId: { micOn: boolean, camOn: boolean } }
@@ -127,29 +127,48 @@ export default function App() {
   function ensurePeer(remoteId) {
     if (pcsRef.current[remoteId]) return pcsRef.current[remoteId];
 
-    const pc = new RTCPeerConnection({
+    var myPeerConnection = new RTCPeerConnection({
       iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302"
-        },
-        {
-          urls: "stun:openrelay.metered.ca:80"
-        },
-        {
-          urls: "turn:openrelay.metered.ca:80",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        },
-        {
-          urls: "turn:openrelay.metered.ca:443",
-          username: "openrelayproject",
-          credential: "openrelayproject"
-        }
-      ]
+          {
+            urls: "stun:stun.relay.metered.ca:80",
+          },
+          {
+            urls: "turn:standard.relay.metered.ca:80",
+            username: import.meta.env.VITE_METERED_USERNAME,
+            credential: import.meta.env.VITE_METERED_CREDENTIAL,
+          },
+          {
+            urls: "turn:standard.relay.metered.ca:80?transport=tcp",
+            username: import.meta.env.VITE_METERED_USERNAME,
+            credential: import.meta.env.VITE_METERED_CREDENTIAL,
+          },
+          {
+            urls: "turn:standard.relay.metered.ca:443",
+            username: import.meta.env.VITE_METERED_USERNAME,
+            credential: import.meta.env.VITE_METERED_CREDENTIAL,
+          },
+          {
+            urls: "turns:standard.relay.metered.ca:443?transport=tcp",
+            username: import.meta.env.VITE_METERED_USERNAME,
+            credential: import.meta.env.VITE_METERED_CREDENTIAL,
+          },
+      ],
     });
 
     // add local tracks if already available
     attachLocalTracksToPC(pc);
+
+    pc.oniceconnectionstatechange = () => {
+      console.log("ICE state:", remoteId, pc.iceConnectionState);
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log("PC state:", remoteId, pc.connectionState);
+    };
+
+    pc.onicecandidateerror = (e) => {
+      console.log("ICE candidate error:", remoteId, e);
+    };
 
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "failed") {
