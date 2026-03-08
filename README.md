@@ -40,6 +40,10 @@ It supports **multi-user rooms**, **open/private rooms**, **chat**, and **mic/ca
 - Socket.IO (WebSockets)
 - Private room token generation using `crypto`
 
+Deployment:
+- Render (for backend hosting)
+- Metered TURN server (for WebRTC relay)
+
 ---
 
 ## Project Structure
