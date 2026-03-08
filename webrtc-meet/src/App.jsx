@@ -127,7 +127,7 @@ export default function App() {
   function ensurePeer(remoteId) {
     if (pcsRef.current[remoteId]) return pcsRef.current[remoteId];
 
-    var myPeerConnection = new RTCPeerConnection({
+    const pc = new RTCPeerConnection({
       iceServers: [
           {
             urls: "stun:stun.relay.metered.ca:80",
