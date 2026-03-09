@@ -160,6 +160,11 @@ export default function App() {
 
     pc.oniceconnectionstatechange = () => {
       console.log("ICE state:", remoteId, pc.iceConnectionState);
+      if (pc.iceConnectionState === "failed") {
+        try {
+          pc.restartIce();
+        } catch {}
+      }
     };
 
     pc.onconnectionstatechange = () => {
@@ -168,12 +173,6 @@ export default function App() {
 
     pc.onicecandidateerror = (e) => {
       console.log("ICE candidate error:", remoteId, e);
-    };
-
-    pc.oniceconnectionstatechange = () => {
-      if (pc.iceConnectionState === "failed") {
-        try { pc.restartIce(); } catch {}
-      }
     };
 
     pc.ontrack = (event) => {
@@ -829,13 +828,24 @@ function CallScreen({
                       const remoteName = pinnedParticipant?.name || "User";
                       const remoteCamOn = mediaState?.[remoteId]?.camOn;
 
-                      if (remoteCamOn !== true) return <AvatarTile name={remoteName} />;
-                      if (bigStream) return <VideoPlayer stream={bigStream} muted={remoteMuted} />;
+                      if (!bigStream) {
+                        return (
+                          <div className="w-full h-full grid place-items-center text-slate-500 text-sm">
+                            Connecting...
+                          </div>
+                        );
+                      }
 
                       return (
-                        <div className="w-full h-full grid place-items-center text-slate-500 text-sm">
-                          Connecting...
-                        </div>
+                        <>
+                          <AudioPlayer stream={bigStream} muted={remoteMuted} />
+
+                          {remoteCamOn ? (
+                            <VideoPlayer stream={bigStream} muted />
+                          ) : (
+                            <AvatarTile name={remoteName} />
+                          )}
+                        </>
                       );
                     })()}
 
@@ -892,14 +902,13 @@ function CallScreen({
 
                               return (
                                 <>
-                                  {/* Keep media element mounted so remote audio can play even if camera is off */}
-                                  <VideoPlayer
-                                    stream={stream}
-                                    muted={remoteMuted}
-                                    className={remoteCamOn ? "w-full h-full object-cover" : "hidden"}
-                                  />
+                                  <AudioPlayer stream={stream} muted={remoteMuted} />
 
-                                  {!remoteCamOn && <AvatarTile name={p.name} />}
+                                  {remoteCamOn ? (
+                                    <VideoPlayer stream={stream} muted />
+                                  ) : (
+                                    <AvatarTile name={p.name} />
+                                  )}
                                 </>
                               );
                             })()}
@@ -1004,4 +1013,15 @@ function VideoPlayer({ stream, muted, className = "w-full h-full object-cover" }
       className={className}
     />
   );
+}
+
+function AudioPlayer({ stream, muted = false }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!ref.current || !stream) return;
+    ref.current.srcObject = stream;
+  }, [stream]);
+
+  return <audio ref={ref} autoPlay playsInline muted={muted} />;
 }
