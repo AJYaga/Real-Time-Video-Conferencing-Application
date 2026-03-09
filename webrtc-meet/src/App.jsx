@@ -880,16 +880,29 @@ function CallScreen({
                             </div>
                           )
                         ) : (() => {
-                            const remoteCamOn = mediaState?.[p.socketId]?.camOn;
-                            if (remoteCamOn !== true) return <AvatarTile name={p.name} />;
-                            if (stream) return <VideoPlayer stream={stream} muted={remoteMuted} />;
+                              const remoteCamOn = mediaState?.[p.socketId]?.camOn;
 
-                            return (
-                              <div className="w-full h-full grid place-items-center text-slate-500 text-sm">
-                                Connecting...
-                              </div>
-                            );
-                          })()}
+                              if (!stream) {
+                                return (
+                                  <div className="w-full h-full grid place-items-center text-slate-500 text-sm">
+                                    Connecting.
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <>
+                                  {/* Keep media element mounted so remote audio can play even if camera is off */}
+                                  <VideoPlayer
+                                    stream={stream}
+                                    muted={remoteMuted}
+                                    className={remoteCamOn ? "w-full h-full object-cover" : "hidden"}
+                                  />
+
+                                  {!remoteCamOn && <AvatarTile name={p.name} />}
+                                </>
+                              );
+                            })()}
 
                         <div className="absolute bottom-2 left-2 rounded-lg bg-slate-950/70 border border-slate-800 px-2 py-1 text-[11px]">
                           {p.name}
@@ -974,15 +987,12 @@ function CallScreen({
   );
 }
 
-function VideoPlayer({ stream, muted }) {
+function VideoPlayer({ stream, muted, className = "w-full h-full object-cover" }) {
   const ref = useRef(null);
 
   useEffect(() => {
     if (!ref.current || !stream) return;
-
     ref.current.srcObject = stream;
-    const p = ref.current.play();
-    if (p && typeof p.catch === "function") p.catch(() => {});
   }, [stream]);
 
   return (
@@ -991,7 +1001,7 @@ function VideoPlayer({ stream, muted }) {
       autoPlay
       playsInline
       muted={muted}
-      className="w-full h-full object-cover"
+      className={className}
     />
   );
 }
