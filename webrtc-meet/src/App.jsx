@@ -817,7 +817,7 @@ function CallScreen({
 
                   {bigIsLocal ? (
                     camOn ? (
-                      <VideoPlayer stream={bigStream} muted />
+                      <VideoPlayer stream={bigStream} muted mirrored />
                     ) : (
                       <div className="w-full h-full grid place-items-center text-slate-500 text-sm">
                         Camera Off
@@ -883,7 +883,7 @@ function CallScreen({
 
                         {isLocal ? (
                           camOn ? (
-                            <VideoPlayer stream={stream} muted />
+                            <VideoPlayer stream={stream} muted mirrored />
                           ) : (
                             <div className="w-full h-full grid place-items-center text-slate-500 text-sm">
                               Camera Off
@@ -996,7 +996,7 @@ function CallScreen({
   );
 }
 
-function VideoPlayer({ stream, muted, className = "w-full h-full object-cover" }) {
+function VideoPlayer({ stream, muted, mirrored = false }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -1010,7 +1010,7 @@ function VideoPlayer({ stream, muted, className = "w-full h-full object-cover" }
       autoPlay
       playsInline
       muted={muted}
-      className={className}
+      className={`w-full h-full object-cover ${mirrored ? "scale-x-[-1]" : ""}`}
     />
   );
 }
